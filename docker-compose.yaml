@@ -1,0 +1,20 @@
+version: "3.2"
+
+services:
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: orders
+      POSTGRES_USER: manager
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+  nats:
+    image: nats-streaming:latest
+    ports:
+      - "4222:4222"
+    environment:
+      STAN_CLUSTER_ID: "nat1"
+    command: ["--cluster_id=nat1"]
