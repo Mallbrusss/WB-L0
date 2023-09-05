@@ -1,41 +1,62 @@
 package HttpServer
 
 import (
-	"L0/DataBaseManager" // Замените на путь к вашему пакету
+	cache "L0/Cache"
+	"L0/DataBaseManager"
 	"encoding/json"
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
+	"time"
 )
 
 // Инициализируйте базу данных здесь
 
 func Serv() {
-	// Настройте маршрут и обработчик HTTP-запросов.
+	// Create an instance of the cache.
+	myCache := cache.NewCache()
+
+	// Set up the HTTP route and request handler.
 	http.HandleFunc("/getOrderData", func(w http.ResponseWriter, r *http.Request) {
-		// Получите значение параметра orderUID из запроса.
+		// Get the value of the orderUID parameter from the request.
 		orderUID := r.URL.Query().Get("orderUID")
 
-		// Вызовите функцию FetchDataFromDatabase для получения данных из базы данных.
+		// Try to get data from the cache.
+		cachedData, exists := myCache.Get(orderUID)
+		if exists {
+			// If data is in the cache, send it in the response.
+			jsonData, err := json.Marshal(cachedData)
+			if err != nil {
+				http.Error(w, "Error converting data to JSON", http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(jsonData)
+			return
+		}
+
+		// If data is not in the cache, call the FetchDataFromDatabase function.
 		orderData, err := DataBaseManager.FetchDataFromDatabase(orderUID)
 		if err != nil {
-			http.Error(w, "Ошибка при получении данных из базы данных", http.StatusInternalServerError)
+			http.Error(w, "Error fetching data from the database", http.StatusInternalServerError)
 			return
 		}
 
-		// Преобразуйте данные в JSON и отправьте их в ответе.
+		// Save the retrieved data in the cache for a specified duration.
+		myCache.Set(orderUID, orderData, 5*time.Minute) // Example: cache will be stored for 1 minute.
+
+		// Convert the data to JSON and send it in the response.
 		jsonData, err := json.Marshal(orderData)
 		if err != nil {
-			http.Error(w, "Ошибка при преобразовании данных в JSON", http.StatusInternalServerError)
+			http.Error(w, "Error converting data to JSON", http.StatusInternalServerError)
 			return
 		}
 
-		// Установите заголовок Content-Type и отправьте JSON-данные.
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(jsonData)
 	})
 
-	// Запустите HTTP-сервер на порту 8080.,
+	// Запустите HTTP-сервер на порту 8080.
 	fs := http.FileServer(http.Dir("./Static"))
 	http.Handle("/", fs)
 
