@@ -7,6 +7,8 @@ import (
 	"log"
 )
 
+var dbConn *sql.DB
+
 type DeliveryData struct {
 	Name    string `json:"name"`
 	Phone   string `json:"phone"`
@@ -58,7 +60,7 @@ type OrderData struct {
 	OOFShard          string       `json:"oof_shard"`
 }
 
-func InsertDataToDataBase(db *sql.DB, data OrderData) error {
+func InsertDataToDataBase(data OrderData) error {
 	deliveryJSON, err := json.Marshal(data.Delivery)
 	if err != nil {
 		return err
@@ -71,7 +73,7 @@ func InsertDataToDataBase(db *sql.DB, data OrderData) error {
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec(`INSERT INTO orders (
+	_, err = dbConn.Exec(`INSERT INTO orders (
             order_uid, track_number, entry, delivery, payment, items, locale,
             internal_signature, customer_id, delivery_service, shardkey, sm_id,
             date_created, oof_shard
@@ -88,7 +90,7 @@ func InsertDataToDataBase(db *sql.DB, data OrderData) error {
 	return nil
 }
 
-func FetchDataFromDatabase(db *sql.DB, orderUID string) (OrderData, error) {
+func FetchDataFromDatabase(orderUID string) (OrderData, error) {
 	// Подготовьте SQL-запрос с параметрами.
 	query := `
         SELECT 
@@ -109,7 +111,7 @@ func FetchDataFromDatabase(db *sql.DB, orderUID string) (OrderData, error) {
 	)
 
 	// Выполните запрос к базе данных и сканируйте результат в переменные.
-	err := db.QueryRow(query, orderUID).Scan(
+	err := dbConn.QueryRow(query, orderUID).Scan(
 		&orderData.OrderUID, &orderData.TrackNumber, &orderData.Entry, &deliveryJSON, &paymentJSON,
 		&itemsJSON, &orderData.Locale, &orderData.InternalSignature, &orderData.CustomerID,
 		&orderData.DeliveryService, &orderData.ShardKey, &orderData.SMID, &orderData.DateCreated, &orderData.OOFShard,
@@ -136,4 +138,20 @@ func FetchDataFromDatabase(db *sql.DB, orderUID string) (OrderData, error) {
 	}
 
 	return orderData, nil
+}
+
+func DbConnect() {
+
+	db, err := sql.Open("postgres", "user=manager dbname=orders password=secret host=localhost port=5432 sslmode=disable")
+	if err != nil {
+		log.Fatalf("Ошибка при подключении к PostgreSQL: %v", err)
+	}
+	dbConn = db
+}
+
+func DbDisconnect() {
+	err := dbConn.Close()
+	if err != nil {
+
+	}
 }

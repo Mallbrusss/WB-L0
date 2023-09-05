@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -11,12 +10,12 @@ import (
 	_ "time"
 
 	dbm "L0/DataBaseManager"
-	_ "github.com/lib/pq"
 	_ "github.com/nats-io/nats.go"
 	"github.com/nats-io/stan.go"
 )
 
 func main() {
+	dbm.DbConnect()
 	// Настройте соединение с сервером NATS Streaming.
 	natsURL := "nats://localhost:4222" // Замените на ваш URL NATS Streaming сервера
 	clusterID := "nat1"                // Замените на ваш Cluster ID
@@ -37,17 +36,6 @@ func main() {
 
 	// Настройте обработчик сообщений для вашего канала.
 
-	db, err := sql.Open("postgres", "user=manager dbname=orders password=secret host=localhost port=5432 sslmode=disable")
-	if err != nil {
-		log.Fatalf("Ошибка при подключении к PostgreSQL: %v", err)
-	}
-	defer func(db *sql.DB) {
-		err := db.Close()
-		if err != nil {
-
-		}
-	}(db)
-
 	subscription, err := conn.Subscribe(channelName, func(msg *stan.Msg) {
 		// Десериализуйте JSON-сообщение в вашу структуру данных.
 		var data dbm.OrderData
@@ -60,7 +48,7 @@ func main() {
 		fmt.Printf("Получено JSON-сообщение: %+v\n", data)
 
 		// Запишите JSON-данные в базу данных PostgreSQL.
-		if err := dbm.InsertDataToDataBase(db, data); err != nil {
+		if err := dbm.InsertDataToDataBase(data); err != nil {
 			log.Printf("Ошибка при записи в PostgreSQL: %v", err)
 		}
 	})
@@ -79,5 +67,6 @@ func main() {
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	<-sigCh
 
+	dbm.DbDisconnect()
 	fmt.Println("Завершение программы...")
 }
