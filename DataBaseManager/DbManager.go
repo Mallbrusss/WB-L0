@@ -140,7 +140,7 @@ func FetchDataFromDatabase(orderUID string) (OrderData, error) {
 	return orderData, nil
 }
 
-func DbConnect() {
+func Connect() {
 
 	db, err := sql.Open("postgres", "user=manager dbname=orders password=secret host=localhost port=5432 sslmode=disable")
 	if err != nil {
@@ -149,7 +149,7 @@ func DbConnect() {
 	dbConn = db
 }
 
-func DbDisconnect() {
+func Disconnect() {
 	err := dbConn.Close()
 	if err != nil {
 

@@ -1,15 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>HTTP Client</title>
+    <title>Order Data Client</title>
 </head>
 <body>
-<h1>HTTP Client</h1>
-<form action="localhost:8080/getOrderData" method="get">
-    <label for="orderUID">Введите orderUID:</label>
-    <input type="text" id="orderUID" name="orderUID" required>
-    <button type="submit">Отправить запрос</button>
-</form>
-<div id="response"></div>
+<h1>Get Order Data</h1>
+<p>Enter Order UID:</p>
+<input type="text" id="orderUIDInput">
+<button onclick="getOrderData()">Fetch Data</button>
+<p>Response:</p>
+<pre id="responseData"></pre>
+
+<script>
+    function getOrderData() {
+        const orderUID = document.getElementById('orderUIDInput').value;
+        const url = `/getOrderData?orderUID=${orderUID}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('responseData').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('responseData').textContent = 'Error fetching data';
+            });
+    }
+</script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-package main
+package HttpServer
 
 import (
 	"L0/DataBaseManager" // Замените на путь к вашему пакету
@@ -10,7 +10,7 @@ import (
 
 // Инициализируйте базу данных здесь
 
-func serv() {
+func Serv() {
 	// Настройте маршрут и обработчик HTTP-запросов.
 	http.HandleFunc("/getOrderData", func(w http.ResponseWriter, r *http.Request) {
 		// Получите значение параметра orderUID из запроса.
