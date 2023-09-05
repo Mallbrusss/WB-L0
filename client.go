@@ -2,7 +2,6 @@ package main
 
 import (
 	"L0/DataBaseManager" // Замените на путь к вашему пакету
-	"database/sql"
 	"encoding/json"
 	_ "github.com/lib/pq"
 	"log"
@@ -11,26 +10,14 @@ import (
 
 // Инициализируйте базу данных здесь
 
-func main() {
-	var db *sql.DB
-	// Инициализируйте подключение к базе данных. Здесь должен быть ваш код подключения.
-	db, err := sql.Open("postgres", "user=manager dbname=orders password=secret host=localhost port=5432 sslmode=disable")
-	if err != nil {
-		log.Fatalf("Ошибка при подключении к PostgreSQL: %v", err)
-	}
-	defer func(db *sql.DB) {
-		err := db.Close()
-		if err != nil {
-		}
-	}(db)
-
+func serv() {
 	// Настройте маршрут и обработчик HTTP-запросов.
 	http.HandleFunc("/getOrderData", func(w http.ResponseWriter, r *http.Request) {
 		// Получите значение параметра orderUID из запроса.
 		orderUID := r.URL.Query().Get("orderUID")
 
 		// Вызовите функцию FetchDataFromDatabase для получения данных из базы данных.
-		orderData, err := DataBaseManager.FetchDataFromDatabase(db, orderUID)
+		orderData, err := DataBaseManager.FetchDataFromDatabase(orderUID)
 		if err != nil {
 			http.Error(w, "Ошибка при получении данных из базы данных", http.StatusInternalServerError)
 			return

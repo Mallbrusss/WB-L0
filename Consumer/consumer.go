@@ -1,12 +1,9 @@
-package main
+package consumer
 
 import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 	_ "time"
 
 	dbm "L0/DataBaseManager"
@@ -14,8 +11,10 @@ import (
 	"github.com/nats-io/stan.go"
 )
 
-func main() {
-	dbm.DbConnect()
+var natConn stan.Conn
+var nutSubscription stan.Subscription
+
+func Consume() {
 	// Настройте соединение с сервером NATS Streaming.
 	natsURL := "nats://localhost:4222" // Замените на ваш URL NATS Streaming сервера
 	clusterID := "nat1"                // Замените на ваш Cluster ID
@@ -27,12 +26,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Ошибка при подключении к NATS Streaming: %v", err)
 	}
-	defer func(conn stan.Conn) {
-		err := conn.Close()
-		if err != nil {
-
-		}
-	}(conn)
+	natConn = conn
 
 	// Настройте обработчик сообщений для вашего канала.
 
@@ -52,21 +46,27 @@ func main() {
 			log.Printf("Ошибка при записи в PostgreSQL: %v", err)
 		}
 	})
+	nutSubscription = subscription
 	if err != nil {
 		log.Fatalf("Ошибка при подписке на канал: %v", err)
 	}
-	defer func(subscription stan.Subscription) {
-		err := subscription.Close()
-		if err != nil {
+}
 
-		}
-	}(subscription)
+func Disconnect() {
+	handleUnsubscribe()
+	handleDisconnect()
+}
 
-	// Ждем сигнала для завершения программы (например, Ctrl+C).
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-	<-sigCh
+func handleUnsubscribe() {
+	err := nutSubscription.Close()
+	if err != nil {
 
-	dbm.DbDisconnect()
-	fmt.Println("Завершение программы...")
+	}
+}
+
+func handleDisconnect() {
+	err := natConn.Close()
+	if err != nil {
+
+	}
 }
