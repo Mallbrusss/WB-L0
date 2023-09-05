@@ -18,3 +18,12 @@ services:
     environment:
       STAN_CLUSTER_ID: "nat1"
     command: ["--cluster_id=nat1"]
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres

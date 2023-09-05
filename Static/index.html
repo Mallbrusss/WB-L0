@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HTTP Client</title>
+</head>
+<body>
+<h1>HTTP Client</h1>
+<form action="localhost:8080/getOrderData" method="get">
+    <label for="orderUID">Введите orderUID:</label>
+    <input type="text" id="orderUID" name="orderUID" required>
+    <button type="submit">Отправить запрос</button>
+</form>
+<div id="response"></div>
+</body>
+</html>
