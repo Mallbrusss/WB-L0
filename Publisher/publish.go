@@ -13,10 +13,10 @@ import (
 
 func main() {
 	// Настройте соединение с сервером NATS Streaming.
-	natsURL := "nats://localhost:4222" // Замените на ваш URL NATS Streaming сервера
-	clusterID := "nat1"                // Замените на ваш Cluster ID
-	clientID := "nat_client2"          // Замените на ваш Client ID
-
+	natsURL := "nats://localhost:4222"
+	clusterID := "nat1"
+	clientID := "nat_client2"
+	channelName := "order_chanel"
 	// Создайте подключение к серверу NATS Streaming.
 	conn, err := stan.Connect(clusterID, clientID, stan.NatsURL(natsURL))
 	if err != nil {
@@ -28,9 +28,6 @@ func main() {
 
 		}
 	}(conn)
-
-	// Периодически публикуйте сообщения в канал.
-	channelName := "order_chanel" // Замените на имя вашего канала
 
 	go func() {
 		// Считайте JSON-данные из файла.

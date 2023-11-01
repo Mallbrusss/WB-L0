@@ -14,10 +14,11 @@ func main() {
 	dbm.Connect()
 	consumer.Consume()
 	httpServ.Serv()
-	// Ждем сигнала для завершения программы (например, Ctrl+C).
+
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	<-sigCh
+	
 	consumer.Disconnect()
 	dbm.Disconnect()
 	fmt.Println("Завершение программы...")
