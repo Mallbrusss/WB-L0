@@ -91,7 +91,6 @@ func InsertDataToDataBase(data OrderData) error {
 }
 
 func FetchDataFromDatabase(orderUID string) (OrderData, error) {
-	// Подготовьте SQL-запрос с параметрами.
 	query := `
         SELECT 
             order_uid, track_number, entry, delivery, payment, items, locale,
@@ -110,7 +109,6 @@ func FetchDataFromDatabase(orderUID string) (OrderData, error) {
 		itemsJSON    []byte
 	)
 
-	// Выполните запрос к базе данных и сканируйте результат в переменные.
 	err := dbConn.QueryRow(query, orderUID).Scan(
 		&orderData.OrderUID, &orderData.TrackNumber, &orderData.Entry, &deliveryJSON, &paymentJSON,
 		&itemsJSON, &orderData.Locale, &orderData.InternalSignature, &orderData.CustomerID,
@@ -121,7 +119,6 @@ func FetchDataFromDatabase(orderUID string) (OrderData, error) {
 		return OrderData{}, err
 	}
 
-	// Десериализуйте JSON-строки в структуры данных.
 	if err := json.Unmarshal(deliveryJSON, &orderData.Delivery); err != nil {
 		log.Printf("Ошибка при десериализации DeliveryData: %v", err)
 		return OrderData{}, err
