@@ -6,15 +6,17 @@ import (
 )
 
 type Cache struct {
-	data  map[string]interface{}
-	mutex sync.RWMutex
+	data        map[string]interface{}
+	mutex       sync.RWMutex
 }
 
 func NewCache() *Cache {
-	return &Cache{
-		data: make(map[string]interface{}),
-	}
+    return &Cache{
+        data: make(map[string]interface{}),
+        mutex: sync.RWMutex{},
+    }
 }
+
 
 func (c *Cache) Get(key string) (interface{}, bool) {
 	c.mutex.RLock()
